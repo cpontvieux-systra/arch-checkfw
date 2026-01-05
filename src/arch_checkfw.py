@@ -91,9 +91,14 @@ def get_firmware(mod, kernel_version=None):
     if kernel_version:
         modinfo_cmd.extend(["-k", kernel_version])
     modinfo_cmd.append(mod)
-
-    result = subprocess.run(modinfo_cmd, stdout=subprocess.PIPE,
-                            encoding="UTF-8", check=True)
+    try:
+        result = subprocess.run(modinfo_cmd, capture_output=True,
+                                encoding="UTF-8", check=True)
+    except subprocess.CalledProcessError as e:
+        if 'not found' in e.stderr:
+            return []
+        else:
+            raise e
     return result.stdout.splitlines()
 
 
